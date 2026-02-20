@@ -42,11 +42,6 @@ function getNotionTodoistIDProperty(page: PageObjectResponse): string {
   return prop?.number ? String(prop.number) : '';
 }
 
-function getNotionTodoistURLProperty(page: PageObjectResponse): string {
-  const prop = page.properties.URL as any;
-  return prop?.url ?? '';
-}
-
 /* ---------------- SEARCH ---------------- */
 
 async function IDSearchNotion(
@@ -60,7 +55,7 @@ async function IDSearchNotion(
     },
   });
 
-  return result.results[0] as PageObjectResponse || null;
+  return (result.results[0] as PageObjectResponse) || null;
 }
 
 async function notionActivePages(): Promise<PageObjectResponse[]> {
@@ -79,7 +74,7 @@ async function notionActivePages(): Promise<PageObjectResponse[]> {
 
 async function newNotionPage(task: Task): Promise<PageObjectResponse> {
   const page = await notionApi.pages.create({
-    parent: { type: 'database_id', database_id: databaseId },
+    parent: { database_id: databaseId },
     properties: {
       Task: {
         title: [{ text: { content: task.content } }],
@@ -97,8 +92,8 @@ async function newNotionPage(task: Task): Promise<PageObjectResponse> {
       },
       Due: task.due
         ? { date: { start: task.due.date } }
-        : undefined,
-    },
+        : null,
+    } as any,
   });
 
   return page as PageObjectResponse;
@@ -128,11 +123,13 @@ async function updateNotionPage(
       Due: task.due
         ? { date: { start: task.due.date } }
         : null,
-    },
+    } as any,
   });
 
   return page as PageObjectResponse;
 }
+
+/* ---------------- TODOIST SIDE ---------------- */
 
 async function newTodoistTask(
   page: PageObjectResponse
@@ -140,7 +137,7 @@ async function newTodoistTask(
   return await todoistApi.addTask({
     content: getNotionTitleProperty(page),
     description: getNotionDescriptionProperty(page),
-    dueDate: getNotionDueProperty(page),
+    dueDate: getNotionDueProperty(page) || undefined,
   });
 }
 
@@ -151,32 +148,36 @@ async function updateTodoistTask(
   return await todoistApi.updateTask(taskID, {
     content: getNotionTitleProperty(page),
     description: getNotionDescriptionProperty(page),
-    dueDate: getNotionDueProperty(page),
+    dueDate: getNotionDueProperty(page) || undefined,
   });
 }
 
-/* ---------------- BASIC AUTO LOOP ---------------- */
+/* ---------------- SYNC LOOP ---------------- */
 
 async function sync() {
-  const todoistTasks = await todoistApi.getTasks();
+  try {
+    const todoistTasks = await todoistApi.getTasks();
 
-  for (const task of todoistTasks) {
-    const notionPage = await IDSearchNotion(Number(task.id));
+    for (const task of todoistTasks) {
+      const notionPage = await IDSearchNotion(Number(task.id));
 
-    if (!notionPage) {
-      await newNotionPage(task);
-    } else {
-      await updateNotionPage(notionPage.id, task);
+      if (!notionPage) {
+        await newNotionPage(task);
+      } else {
+        await updateNotionPage(notionPage.id, task);
+      }
     }
-  }
 
-  const notionPages = await notionActivePages();
+    const notionPages = await notionActivePages();
 
-  for (const page of notionPages) {
-    if (!getNotionTodoistIDProperty(page)) {
-      const task = await newTodoistTask(page);
-      await updateNotionPage(page.id, task);
+    for (const page of notionPages) {
+      if (!getNotionTodoistIDProperty(page)) {
+        const task = await newTodoistTask(page);
+        await updateNotionPage(page.id, task);
+      }
     }
+  } catch (err) {
+    console.error('Sync error:', err);
   }
 }
 
