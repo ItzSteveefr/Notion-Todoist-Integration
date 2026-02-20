@@ -13,14 +13,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node ./scripts/dist/index.js",
-    "lint": "gts lint",
-    "clean": "gts clean",
-    "compile": "tsc",
-    "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
-    "posttest": "npm run lint"
+  "build": "tsc",
+  "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
