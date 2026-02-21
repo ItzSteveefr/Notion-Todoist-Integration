@@ -1,4 +1,16 @@
 {
+  "name": "todoist-and-notion-2-way-integration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node scripts/dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@doist/todoist-api-typescript": "^2.1.2",
     "@notionhq/client": "^2.2.2",
@@ -8,16 +20,5 @@
   "devDependencies": {
     "@types/node": "^18.11.9",
     "gts": "^3.1.1"
-  },
-  "name": "todoist-and-notion-2-way-integration",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-  "build": "tsc",
-  "start": "node script/dist/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  }
 }
