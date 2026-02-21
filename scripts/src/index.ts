@@ -70,7 +70,7 @@ async function notionActivePages(): Promise<PageObjectResponse[]> {
   return result.results as PageObjectResponse[];
 }
 
-/* ---------------- CREATE / UPDATE ---------------- */
+/* ---------------- CREATE / UPDATE NOTION ---------------- */
 
 async function newNotionPage(task: Task): Promise<PageObjectResponse> {
   const page = await notionApi.pages.create({
@@ -137,7 +137,7 @@ async function newTodoistTask(
   return await todoistApi.addTask({
     content: getNotionTitleProperty(page),
     description: getNotionDescriptionProperty(page),
-    dueDate: getNotionDueProperty(page) || undefined,
+    dueString: getNotionDueProperty(page) || undefined,
   });
 }
 
@@ -148,7 +148,7 @@ async function updateTodoistTask(
   return await todoistApi.updateTask(taskID, {
     content: getNotionTitleProperty(page),
     description: getNotionDescriptionProperty(page),
-    dueDate: getNotionDueProperty(page) || undefined,
+    dueString: getNotionDueProperty(page) || undefined,
   });
 }
 
